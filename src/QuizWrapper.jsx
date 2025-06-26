@@ -4,21 +4,40 @@
 import React, { useEffect, useState } from "react";
 import Papa from "papaparse";
 import Quiz from "./Quiz";
-import { Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
-
-
-// Enkel laster‑komponent for gjenbruk
-function LoaderCard() {
+// Enkel laster‑komponent (uten eksterne UI‑bibliotek)
+function Loader() {
   return (
-    <div className="w-full flex justify-center pt-10">
-      <Card className="max-w-xl w-full">
-        <CardContent className="flex flex-col gap-2 py-10 items-center text-muted-foreground">
-          <Loader2 className="animate-spin w-8 h-8" />
-          Laster inn spørsmål …
-        </CardContent>
-      </Card>
+    <div style={{ display: "flex", justifyContent: "center", paddingTop: "4rem" }}>
+      <div
+        style={{
+          padding: "2rem 3rem",
+          border: "1px solid #ececec",
+          borderRadius: 8,
+          maxWidth: 400,
+          width: "100%",
+          textAlign: "center",
+          color: "#666",
+        }}
+      >
+        <div className="spinner" style={{ marginBottom: 12 }}>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#888"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="animate-spin"
+          >
+            <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+            <path d="M22 12a10 10 0 0 1-10 10" />
+          </svg>
+        </div>
+        Laster inn spørsmål …
+      </div>
     </div>
   );
 }
@@ -41,7 +60,7 @@ export default function QuizWrapper() {
 
       const formatted = data.map((row) => ({
         question: row.question,
-        options: row.options.split("¤").map((opt) => opt.trim()),
+        options: row.options?.split("¤").map((o) => o.trim()) || [],
         answer: row.answer,
         explanation: row.explanation,
         theme: row.theme,
@@ -54,11 +73,11 @@ export default function QuizWrapper() {
     fetchCSV();
   }, []);
 
-  if (loading) return <LoaderCard />;
+  if (loading) return <Loader />;
 
   return (
-    <div className="flex justify-center px-4 py-8">
-      <div className="max-w-xl w-full">
+    <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
+      <div style={{ maxWidth: 600, width: "100%" }}>
         <Quiz questions={questions} />
       </div>
     </div>
