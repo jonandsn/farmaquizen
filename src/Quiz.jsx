@@ -1,50 +1,48 @@
 import React, { useState } from "react";
 
-export default function Quiz({ questions }) {
-  // Finn unike tema
+export default function Quiz({ questions, onFinish }) {
   const themes = [...new Set(questions.map((q) => q.theme))];
 
-  // lokal state
   const [theme, setTheme] = useState("");
-  const [index, setIndex] = useState(0);
+  const [i, setI] = useState(0);
   const [selected, setSelected] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [score, setScore] = useState(0);
 
-  // Velg tema først
   if (!theme) {
     return (
-      <div style={{ textAlign: "center" }}>
-        <h2>Velg tema</h2>
-        {themes.map((t) => (
-          <button
-            key={t}
-            onClick={() => {
-              setTheme(t);
-              setIndex(0);
-            }}
-            style={{ margin: "0.5rem" }}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl font-semibold">Velg tema</h2>
+        <div className="flex flex-wrap justify-center gap-3">
+          {themes.map((t) => (
+            <button
+              key={t}
+              className="px-4 py-2 rounded-md bg-blue-600 text-white"
+              onClick={() => {
+                setTheme(t);
+                setI(0);
+                setScore(0);
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }
 
-  // Filtrer spørsmål på valgt tema
   const qs = questions.filter((q) => q.theme === theme);
-  const q = qs[index];
-
-  // Ferdig med temaet
+  const q = qs[i];
   if (!q) {
+    onFinish?.(score);
     return (
-      <div style={{ textAlign: "center" }}>
-        <h3>Du er ferdig med «{theme}»!</h3>
+      <div className="text-center space-y-4">
+        <h3 className="text-xl">Ferdig! Du fikk {score} / {qs.length} riktige.</h3>
         <button
+          className="px-4 py-2 bg-green-600 text-white rounded-md"
           onClick={() => {
             setTheme("");
             setSelected("");
-            setShowFeedback(false);
           }}
         >
           Velg nytt tema
@@ -53,61 +51,53 @@ export default function Quiz({ questions }) {
     );
   }
 
-  // Håndter svarvalg
-  const handleSelect = (opt) => {
+  const choose = (opt) => {
     setSelected(opt);
-    setShowFeedback(true);
+    if (opt === q.answer) setScore((s) => s + 1);
   };
 
-  // Gå til neste spørsmål
   const next = () => {
     setSelected("");
-    setShowFeedback(false);
-    setIndex(index + 1);
+    setI(i + 1);
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto" }}>
-      <h3>
-        {index + 1}/{qs.length}: {q.question}
-      </h3>
+    <div className="space-y-6">
+      <div className="text-sm text-gray-500">
+        {i + 1} / {qs.length} – Tema: {theme}
+      </div>
+      <h3 className="text-lg font-semibold">{q.question}</h3>
 
-      {/* Vis svaralternativer */}
       {q.options.map((opt) => {
-        // fargelegging for feedback
-        let bg = "";
-        if (showFeedback) {
-          if (opt === q.answer) bg = "lightgreen";
-          else if (opt === selected) bg = "salmon";
-        }
+        const correct = opt === q.answer;
+        const chosen = opt === selected;
+        const base = "block w-full text-left px-4 py-2 rounded-md border";
+        const neutral = "border-gray-300";
+        const right = "bg-green-100 border-green-400";
+        const wrong = "bg-red-100 border-red-400";
+
+        let cls = base + " " + neutral;
+        if (selected) cls = correct ? base + " " + right : chosen ? base + " " + wrong : cls;
 
         return (
           <button
             key={opt}
-            onClick={() => handleSelect(opt)}
-            disabled={showFeedback}
-            style={{
-              display: "block",
-              margin: "0.4rem 0",
-              padding: "0.6rem",
-              width: "100%",
-              background: bg,
-            }}
+            disabled={!!selected}
+            className={cls}
+            onClick={() => choose(opt)}
           >
             {opt}
           </button>
         );
       })}
 
-      {/* Feedback-seksjon */}
-      {showFeedback && (
-        <div style={{ marginTop: "1rem" }}>
+      {selected && (
+        <div className="space-y-2">
           <p>
-            {selected === q.answer ? "✅ Riktig!" : "❌ Feil."}{" "}
-            {q.explanation}
+            {selected === q.answer ? "✅ Riktig!" : "❌ Feil."} {q.explanation}
           </p>
-          <button onClick={next} style={{ marginTop: "0.5rem" }}>
-            Neste spørsmål
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-md" onClick={next}>
+            Neste
           </button>
         </div>
       )}
