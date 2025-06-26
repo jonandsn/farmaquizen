@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import Papa from "papaparse";
 import Quiz from "./Quiz";
 
-// Laster‐indikator
 function Loader() {
   return (
     <div className="flex justify-center pt-20">
@@ -28,20 +27,22 @@ function Loader() {
   );
 }
 
-// Enkel leaderboard basert på localStorage
+// Lokal leaderboard via localStorage
 function Leaderboard({ score }) {
   const [top, setTop] = useState([]);
 
   useEffect(() => {
     if (score === null) return;
-    const list = JSON.parse(localStorage.getItem("farmaquizenLB") || "[]");
-    const name = prompt("Skriv navnet ditt for leaderboard", "Anon") || "Anon";
-    const newList = [...list, { name, score }].sort((a, b) => b.score - a.score).slice(0, 10);
-    localStorage.setItem("farmaquizenLB", JSON.stringify(newList));
+    const list = JSON.parse(localStorage.getItem("farmaLB") || "[]");
+    const name = prompt("Navn til leaderboard", "Anon") || "Anon";
+    const newList = [...list, { name, score }]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+    localStorage.setItem("farmaLB", JSON.stringify(newList));
     setTop(newList);
   }, [score]);
 
-  if (top.length === 0) return null;
+  if (!top.length) return null;
   return (
     <div className="max-w-md w-full mx-auto mt-10">
       <h3 className="text-xl font-semibold mb-2">Leaderboard</h3>
@@ -65,19 +66,16 @@ export default function QuizWrapper() {
     async function fetchCSV() {
       const url =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjxEFn1oFCBuEhK3vToYAlwSA3LDRiVfnTZShFGx8Z1u3hIBRv0G17AaqJhxY-Dq1Ysh5BdamBdTNe/pub?gid=0&single=true&output=csv";
-
       const csv = await (await fetch(url)).text();
       const { data } = Papa.parse(csv, { header: true, skipEmptyLines: true });
-
-      setQuestions(
-        data.map((row) => ({
-          question: row.question,
-          options: row.options?.split("¤").map((o) => o.trim()) || [],
-          answer: row.answer,
-          explanation: row.explanation,
-          theme: row.theme,
-        }))
-      );
+      const formatted = data.map((row) => ({
+        question: row.question,
+        options: row.options?.split("¤").map((o) => o.trim()) || [],
+        answer: row.answer,
+        explanation: row.explanation,
+        theme: row.theme,
+      }));
+      setQuestions(formatted);
       setLoading(false);
     }
     fetchCSV();
