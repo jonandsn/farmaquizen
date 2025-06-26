@@ -39,9 +39,9 @@ export default function QuizWrapper() {
         skipEmptyLines: true,
       });
 
-      const formatted = (data as any[]).map((row) => ({
+      const formatted = data.map((row) => ({
         question: row.question,
-        options: row.options.split("¤").map((opt: string) => opt.trim()),
+        options: row.options.split("¤").map((opt) => opt.trim()),
         answer: row.answer,
         explanation: row.explanation,
         theme: row.theme,
