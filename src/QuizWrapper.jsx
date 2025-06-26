@@ -7,13 +7,7 @@ import Quiz from "./Quiz";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-export type Question = {
-  question: string;
-  options: string[];
-  answer: string;
-  explanation: string;
-  theme: string;
-};
+
 
 // Enkel laster‑komponent for gjenbruk
 function LoaderCard() {
@@ -30,7 +24,7 @@ function LoaderCard() {
 }
 
 export default function QuizWrapper() {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
