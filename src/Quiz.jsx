@@ -31,13 +31,13 @@ export default function Quiz({ questions, onFinish }) {
 
   if (!theme) {
     return (
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-6">Velg tema</h1>
-        <div className="flex flex-wrap justify-center gap-4">
+      <div className="text-center py-10 px-4">
+        <h1 className="text-3xl font-bold mb-8">Velg tema</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-md mx-auto">
           {themes.map((t) => (
             <button
               key={t}
-              className="bg-white border border-gray-300 rounded-lg px-4 py-2 hover:bg-blue-100 transition"
+              className="bg-white border border-gray-300 rounded-xl px-6 py-3 shadow hover:shadow-md hover:bg-blue-50 transition"
               onClick={() => setTheme(t)}
             >
               {t}
@@ -50,10 +50,10 @@ export default function Quiz({ questions, onFinish }) {
 
   if (finished) {
     return (
-      <div className="text-center">
+      <div className="text-center py-10 px-4">
         <h2 className="text-2xl font-semibold mb-4">Du fikk {score} av {filtered.length} riktige!</h2>
         <button
-          className="mt-4 bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700"
           onClick={() => {
             setTheme(null);
             setCurrent(0);
@@ -68,13 +68,13 @@ export default function Quiz({ questions, onFinish }) {
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">
+    <div className="py-8 px-4 max-w-2xl mx-auto">
+      <h2 className="text-lg font-semibold mb-6">
         {current + 1}. {question.question}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {question.options.map((option, i) => {
-          const base = "px-4 py-3 border rounded cursor-pointer text-left";
+          const base = "px-4 py-3 border rounded-xl cursor-pointer text-left transition duration-150";
           const isCorrect = selected && option === question.answer;
           const isWrong = selected && option === selected && option !== question.answer;
           const classes = selected
@@ -82,7 +82,7 @@ export default function Quiz({ questions, onFinish }) {
               ? `${base} border-green-500 bg-green-100`
               : isWrong
               ? `${base} border-red-500 bg-red-100`
-              : `${base} opacity-50`
+              : `${base} opacity-60`
             : `${base} hover:bg-gray-100`;
           return (
             <button
@@ -97,7 +97,7 @@ export default function Quiz({ questions, onFinish }) {
         })}
       </div>
       {selected && (
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-6 text-sm text-gray-700 bg-gray-50 p-4 rounded-xl">
           <strong>Forklaring:</strong> {question.explanation}
         </div>
       )}
