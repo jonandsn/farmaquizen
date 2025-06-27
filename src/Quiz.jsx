@@ -1,27 +1,44 @@
+// @ts-nocheck
+"use client";
+
 import React, { useState } from "react";
 
 export default function Quiz({ questions, onFinish }) {
   const themes = [...new Set(questions.map((q) => q.theme))];
-
-  const [theme, setTheme] = useState("");
-  const [i, setI] = useState(0);
-  const [selected, setSelected] = useState("");
+  const [theme, setTheme] = useState(null);
+  const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [selected, setSelected] = useState(null);
+
+  const filtered = questions.filter((q) => q.theme === theme);
+  const question = filtered[current];
+
+  function handleAnswer(option) {
+    if (selected) return;
+    setSelected(option);
+    if (option === question.answer) setScore(score + 1);
+    setTimeout(() => {
+      setSelected(null);
+      if (current + 1 < filtered.length) {
+        setCurrent(current + 1);
+      } else {
+        setFinished(true);
+        onFinish(score + (option === question.answer ? 1 : 0));
+      }
+    }, 1000);
+  }
 
   if (!theme) {
     return (
-      <div className="text-center space-y-4">
-        <h2 className="text-2xl font-semibold">Velg tema</h2>
-        <div className="flex flex-wrap justify-center gap-3">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-6">Velg tema</h1>
+        <div className="flex flex-wrap justify-center gap-4">
           {themes.map((t) => (
             <button
               key={t}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-              onClick={() => {
-                setTheme(t);
-                setI(0);
-                setScore(0);
-              }}
+              className="bg-white border border-gray-300 rounded-lg px-4 py-2 hover:bg-blue-100 transition"
+              onClick={() => setTheme(t)}
             >
               {t}
             </button>
@@ -31,78 +48,57 @@ export default function Quiz({ questions, onFinish }) {
     );
   }
 
-  const qs = questions.filter((q) => q.theme === theme);
-  const q = qs[i];
-  if (!q) {
-    onFinish?.(score);
+  if (finished) {
     return (
-      <div className="text-center space-y-4">
-        <h3 className="text-xl">Ferdig! Du fikk {score} / {qs.length} riktige.</h3>
+      <div className="text-center">
+        <h2 className="text-2xl font-semibold mb-4">Du fikk {score} av {filtered.length} riktige!</h2>
         <button
-          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          className="mt-4 bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
           onClick={() => {
-            setTheme("");
-            setSelected("");
+            setTheme(null);
+            setCurrent(0);
+            setScore(0);
+            setFinished(false);
           }}
         >
-          Velg nytt tema
+          Prøv igjen
         </button>
       </div>
     );
   }
 
-  const choose = (opt) => {
-    setSelected(opt);
-    if (opt === q.answer) setScore((s) => s + 1);
-  };
-
-  const next = () => {
-    setSelected("");
-    setI(i + 1);
-  };
-
   return (
     <div className="space-y-6">
-      <div className="text-sm text-gray-500">
-        {i + 1} / {qs.length} – Tema: {theme}
+      <h2 className="text-xl font-semibold">
+        {current + 1}. {question.question}
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {question.options.map((option, i) => {
+          const base = "px-4 py-3 border rounded cursor-pointer text-left";
+          const isCorrect = selected && option === question.answer;
+          const isWrong = selected && option === selected && option !== question.answer;
+          const classes = selected
+            ? isCorrect
+              ? `${base} border-green-500 bg-green-100`
+              : isWrong
+              ? `${base} border-red-500 bg-red-100`
+              : `${base} opacity-50`
+            : `${base} hover:bg-gray-100`;
+          return (
+            <button
+              key={i}
+              onClick={() => handleAnswer(option)}
+              className={classes}
+              disabled={!!selected}
+            >
+              {option}
+            </button>
+          );
+        })}
       </div>
-      <h3 className="text-lg font-semibold">{q.question}</h3>
-
-      {q.options.map((opt) => {
-        const correct = opt === q.answer;
-        const chosen = opt === selected;
-        const base =
-          "block w-full text-left px-4 py-2 rounded-md border transition-colors";
-        const neutral = "border-gray-300 hover:bg-gray-50";
-        const right = "bg-green-100 border-green-400";
-        const wrong = "bg-red-100 border-red-400";
-
-        let cls = `${base} ${neutral}`;
-        if (selected) cls = correct ? `${base} ${right}` : chosen ? `${base} ${wrong}` : cls;
-
-        return (
-          <button
-            key={opt}
-            disabled={!!selected}
-            className={cls}
-            onClick={() => choose(opt)}
-          >
-            {opt}
-          </button>
-        );
-      })}
-
       {selected && (
-        <div className="space-y-2">
-          <p>
-            {selected === q.answer ? "✅ Riktig!" : "❌ Feil."} {q.explanation}
-          </p>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={next}
-          >
-            Neste
-          </button>
+        <div className="mt-4 text-sm text-gray-600">
+          <strong>Forklaring:</strong> {question.explanation}
         </div>
       )}
     </div>
